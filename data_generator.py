@@ -1,4 +1,4 @@
-""" Code for loading data. """
+""" Code for loading data. """  #加载数据的代码,三个引号一行一个输出
 import numpy as np
 import os
 import random
@@ -11,9 +11,11 @@ FLAGS = flags.FLAGS
 
 class DataGenerator(object):
     """
-    Data Generator capable of generating batches of sinusoid or Omniglot data.
+    Data Generator capable of generating batches of sinusoid or Omniglot data.   
     A "class" is considered a class of omniglot digits or a particular sinusoid function.
     """
+	#能够生成批量正弦波或宏块数据的数据生成器
+	#“类”被认为是一类Omniglot数字或一个特殊的正弦函数。
     def __init__(self, num_samples_per_class, batch_size, config={}):
         """
         Args:
@@ -24,14 +26,14 @@ class DataGenerator(object):
         self.num_samples_per_class = num_samples_per_class
         self.num_classes = 1  # by default 1 (only relevant for classification problems)
 
-        if FLAGS.datasource == 'sinusoid':
+        if FLAGS.datasource == 'sinusoid':  #数据源是正弦曲线
             self.generate = self.generate_sinusoid_batch
             self.amp_range = config.get('amp_range', [0.1, 5.0])
             self.phase_range = config.get('phase_range', [0, np.pi])
             self.input_range = config.get('input_range', [-5.0, 5.0])
             self.dim_input = 1
             self.dim_output = 1
-        elif 'omniglot' in FLAGS.datasource:
+        elif 'omniglot' in FLAGS.datasource:  #数据源是omniglot
             self.num_classes = config.get('num_classes', FLAGS.num_classes)
             self.img_size = config.get('img_size', (28, 28))
             self.dim_input = np.prod(self.img_size)
@@ -53,7 +55,7 @@ class DataGenerator(object):
             else:
                 self.metaval_character_folders = character_folders[num_train:num_train+num_val]
             self.rotations = config.get('rotations', [0, 90, 180, 270])
-        elif FLAGS.datasource == 'miniimagenet':
+        elif FLAGS.datasource == 'miniimagenet':   #数据源是miniimagenet
             self.num_classes = config.get('num_classes', FLAGS.num_classes)
             self.img_size = config.get('img_size', (84, 84))
             self.dim_input = np.prod(self.img_size)*3
@@ -76,26 +78,27 @@ class DataGenerator(object):
             self.metaval_character_folders = metaval_folders
             self.rotations = config.get('rotations', [0])
         else:
-            raise ValueError('Unrecognized data source')
+            raise ValueError('Unrecognized data source')  #未识别数据源
 
 
     def make_data_tensor(self, train=True):
+        # type: (object) -> object
         if train:
             folders = self.metatrain_character_folders
-            # number of tasks, not number of meta-iterations. (divide by metabatch size to measure)
+            # 任务数，而不是元迭代数。(除以元块大小来度量)
             num_total_batches = 200000
         else:
             folders = self.metaval_character_folders
             num_total_batches = 600
 
-        # make list of files
+        # make list of files文件列表
         print('Generating filenames')
         all_filenames = []
         for _ in range(num_total_batches):
             sampled_character_folders = random.sample(folders, self.num_classes)
             random.shuffle(sampled_character_folders)
             labels_and_images = get_images(sampled_character_folders, range(self.num_classes), nb_samples=self.num_samples_per_class, shuffle=False)
-            # make sure the above isn't randomized order
+            # make sure the above isn't randomized order确保上面的顺序不是随机的
             labels = [li[0] for li in labels_and_images]
             filenames = [li[1] for li in labels_and_images]
             all_filenames.extend(filenames)
@@ -133,8 +136,8 @@ class DataGenerator(object):
             image_batch = images[i*examples_per_batch:(i+1)*examples_per_batch]
 
             if FLAGS.datasource == 'omniglot':
-                # omniglot augments the dataset by rotating digits to create new classes
-                # get rotation per class (e.g. 0,1,2,0,0 if there are 5 classes)
+                # Omniglot通过旋转数字以创建新类来增强数据集。
+                # 每类轮调 (e.g. 0,1,2,0,0 if there are 5 classes)
                 rotations = tf.multinomial(tf.log([[1., 1.,1.,1.]]), self.num_classes)
             label_batch = tf.convert_to_tensor(labels)
             new_list, new_label_list = [], []

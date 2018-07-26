@@ -36,7 +36,7 @@ class MAML:
                 self.forward = self.forward_conv
                 self.construct_weights = self.construct_conv_weights
             else:
-                self.dim_hidden = [256, 128, 64, 64]
+                self.dim_hidden = [256, 128, 64, 64]   #隐藏层大小为256,128,64,64
                 self.forward=self.forward_fc
                 self.construct_weights = self.construct_fc_weights
             if FLAGS.datasource == 'miniimagenet':
