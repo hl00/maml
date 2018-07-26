@@ -24,7 +24,7 @@ class DataGenerator(object):
         """
         self.batch_size = batch_size
         self.num_samples_per_class = num_samples_per_class
-        self.num_classes = 1  # by default 1 (only relevant for classification problems)
+        self.num_classes = 1  # 默认情况下1(仅与分类问题相关)
 
         if FLAGS.datasource == 'sinusoid':  #数据源是正弦曲线
             self.generate = self.generate_sinusoid_batch
@@ -91,21 +91,22 @@ class DataGenerator(object):
             folders = self.metaval_character_folders
             num_total_batches = 600
 
-        # make list of files文件列表
+        # 文件列表
         print('Generating filenames')
         all_filenames = []
         for _ in range(num_total_batches):
             sampled_character_folders = random.sample(folders, self.num_classes)
             random.shuffle(sampled_character_folders)
             labels_and_images = get_images(sampled_character_folders, range(self.num_classes), nb_samples=self.num_samples_per_class, shuffle=False)
-            # make sure the above isn't randomized order确保上面的顺序不是随机的
+            # 确保上面的顺序不是随机的
             labels = [li[0] for li in labels_and_images]
             filenames = [li[1] for li in labels_and_images]
             all_filenames.extend(filenames)
 
         # make queue for tensorflow to read from
-        filename_queue = tf.train.string_input_producer(tf.convert_to_tensor(all_filenames), shuffle=False)
-        print('Generating image processing ops')
+        filename_queue = tf.train.string_input_producer(tf.convert_to_tensor(all_filenames), shuffle=False)   #传入文件名队列，顺序不变
+        print('Generating image processing ops')  #生成图像处理操作
+        # reader从文件名队列中读数据。对应的方法是reader.read
         image_reader = tf.WholeFileReader()
         _, image_file = image_reader.read(filename_queue)
         if FLAGS.datasource == 'miniimagenet':
@@ -123,7 +124,7 @@ class DataGenerator(object):
         min_queue_examples = 256
         examples_per_batch = self.num_classes * self.num_samples_per_class
         batch_image_size = self.batch_size  * examples_per_batch
-        print('Batching images')
+        print('Batching images')   #分批图像
         images = tf.train.batch(
                 [image],
                 batch_size = batch_image_size,
@@ -131,7 +132,7 @@ class DataGenerator(object):
                 capacity=min_queue_examples + 3 * batch_image_size,
                 )
         all_image_batches, all_label_batches = [], []
-        print('Manipulating image data to be right shape')
+        print('Manipulating image data to be right shape')   #处理图像数据使其形状正确
         for i in range(self.batch_size):
             image_batch = images[i*examples_per_batch:(i+1)*examples_per_batch]
 
@@ -164,7 +165,7 @@ class DataGenerator(object):
 
     def generate_sinusoid_batch(self, train=True, input_idx=None):
         # Note train arg is not used (but it is used for omniglot method.
-        # input_idx is used during qualitative testing --the number of examples used for the grad update
+        # input_idx 在定性测试中使用——示例数用于升级
         amp = np.random.uniform(self.amp_range[0], self.amp_range[1], [self.batch_size])
         phase = np.random.uniform(self.phase_range[0], self.phase_range[1], [self.batch_size])
         outputs = np.zeros([self.batch_size, self.num_samples_per_class, self.dim_output])
